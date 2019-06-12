@@ -1,3 +1,7 @@
+# my ignores
+*.sublime-project
+*.sublime-workspace
+
 *.gem
 *.rbc
 /.config
