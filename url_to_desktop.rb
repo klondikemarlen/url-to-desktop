@@ -2,6 +2,8 @@
 Convert a Windows URL shortcut to an Ubuntu .desktop file.
 
 Specification:
+1. Take the file name and url from the windows shortcut
+2. Create a new .desktop file using said data.
 
 Examples:
 # Windows URL shortcut
@@ -32,7 +34,7 @@ class URLShortcutReader
   def extract_url(text)
     for line in text.each_line
       if line.start_with? 'URL'
-        return line[4..-1].strip
+        return line[4..-1].rstrip
       end
     end
   end
@@ -43,20 +45,35 @@ class DesktopURLWriter
   def initialize(path_name, url)
     base = File.basename(path_name).split('.')[0]
     path_name_less_extenstion = path_name.split('.')[0]
-    out_f = File.open("#{path_name_less_extenstion}.desktop", 'w') do |f|
+    extention = "html"
+    out_f = File.open("#{path_name_less_extenstion}.#{extention}", 'w') do |f|
       f.write(template(base, url))
     end
   end
 
-  def template(name, url)
-    <<~EOS
-      [Desktop Entry]
-      Encoding=UTF-8
-      Name=#{name}
-      Type=Link
-      URL=#{url}
-      Icon=text-html
+=begin
+Produce a template string.
 
+Alternate approach
+[Desktop Entry]
+Encoding=UTF-8
+Name=#{name}
+Type=Link
+URL=#{url}
+Icon=text-html
+=end
+  def template(name, url)
+    title = name.split(/(\W)/).map(&:capitalize).join
+    <<~EOS
+      <html>
+      <head>
+      <title>#{title}</title>
+        <meta http-equiv="refresh" content="0; URL='#{url}'" />
+      </head>
+      <body>
+        <p>This page has moved to a <a href="#{url}">#{name}</a>.</p>
+      </body>
+      </html>
     EOS
   end
 end
